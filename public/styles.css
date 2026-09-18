@@ -96,3 +96,12 @@ body{overflow-x:hidden}
   .mascot,.task,.task-emoji,.star-counter-card .emoji,.all-done-emoji,.ambient-stars span,.reward.ready{animation:none!important}
   .flying-star{display:none}
 }
+
+/* Audio controls */
+.top-actions{display:flex;align-items:center;gap:8px}
+.music-toggle{transition:transform .2s ease,background .2s ease,box-shadow .2s ease}
+.music-toggle.music-on{background:#fff1fa;box-shadow:0 0 0 3px rgba(255,142,199,.13);animation:musicPulseBtn 1.8s ease-in-out infinite}
+.parent-lock{max-width:430px;margin:34px auto;text-align:center}
+.parent-lock .field{text-align:left}
+@keyframes musicPulseBtn{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@media(prefers-reduced-motion:reduce){.music-toggle.music-on{animation:none}}
