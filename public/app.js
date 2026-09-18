@@ -56,33 +56,92 @@ function render(){ if(!mode){roleChooser();return} mode==='kid'?renderKid():rend
 function renderKid(){
   const goal=nextGoal(), all=allApproved(), done=approvedCount(), total=activeTasks().length;
   const pct=Math.min(100, Math.round((state.stars/goal.cost)*100));
+  const road = state.rewards.map(r=>`<div class="road-stop ${state.stars>=r.cost?'reached':''} ${goal.id===r.id?'goal':''}"><div class="road-icon">${r.emoji}</div><div class="road-cost">${r.cost}⭐</div></div>`).join('');
   app.innerHTML = `
-    <section class="card topbar"><div class="mascot">🦄</div><div class="grow"><div class="eyebrow">${greeting()}</div><h1>${esc(state.childName)} ✨</h1><p class="sub">You can do amazing things today!</p></div><button id="settings" class="icon-btn">⚙️</button></section>
-    <div class="stats"><section class="card stat"><div class="emoji">⭐</div><div class="big-num">${state.stars}</div><div class="small">MY STARS</div></section><section class="card stat"><div class="emoji">🏅</div><div class="big-num">${Math.min(4,1+Math.floor(state.history.length/2))}</div><div class="small">MY STICKERS</div></section></div>
-    <section class="card progress-card"><div class="progress-row"><div><div class="eyebrow">NEXT REWARD</div><h3>${esc(goal.title)} ${goal.emoji}</h3></div><span class="pill">${goal.cost} ⭐</span></div><div class="progress"><div style="width:${pct}%"></div></div><div class="progress-text">${state.stars>=goal.cost?'You have enough stars! 🎉':`${goal.cost-state.stars} more stars!`}</div></section>
-    <div class="section-head"><div><h2>TODAY ☀️</h2><p class="sub">Tap when you finish a job.</p></div><span class="pill">${done}/${total} DONE</span></div>
-    <div class="task-list">${activeTasks().map(taskKidHtml).join('')}</div>
-    <section class="card reward-shop"><div class="eyebrow" style="text-align:center">REWARD SHOP</div><p class="sub" style="text-align:center">Finish all today's jobs, then choose.</p><div class="reward-list mt14">${state.rewards.map(r=>rewardHtml(r,all)).join('')}</div><div class="save-hint">Saving your stars can unlock a bigger prize ✨</div></section>
-    <section class="card stickers"><h3>MY STICKERS 🏅</h3><div class="sticker-row"><span class="sticker">🌟 First Star</span><span class="sticker ${done>=3?'':'lock'}">🤝 Super Helper</span><span class="sticker ${state.stars>=35?'':'lock'}">🐷 Super Saver</span><span class="sticker ${state.stars>=50?'':'lock'}">🏆 Star Champion</span></div></section>`;
+    <div class="ambient-stars" aria-hidden="true"><span>✦</span><span>★</span><span>✧</span><span>★</span><span>✦</span></div>
+    <div class="kid-shell">
+      <div class="kid-left">
+        <section class="card topbar kid-hero"><div class="mascot" aria-hidden="true">🦄</div><div class="grow"><div class="eyebrow">${greeting()}</div><h1>${esc(state.childName)} ✨</h1><p class="sub">You can do amazing things today!</p></div><button id="settings" class="icon-btn">⚙️</button></section>
+        <div class="stats"><section class="card stat star-counter-card"><div class="emoji">⭐</div><div id="kidStarTotal" class="big-num">${state.stars}</div><div class="small">MY STARS</div></section><section class="card stat"><div class="emoji">🏅</div><div class="big-num">${Math.min(4,1+Math.floor(state.history.length/2))}</div><div class="small">MY STICKERS</div></section></div>
+        <section class="card progress-card">
+          <div class="progress-row"><div><div class="eyebrow">NEXT REWARD</div><h3>${esc(goal.title)} ${goal.emoji}</h3></div><span class="pill">${goal.cost} ⭐</span></div>
+          <div class="progress"><div style="width:${pct}%"></div></div>
+          <div class="progress-text">${state.stars>=goal.cost?'You have enough stars! 🎉':`${goal.cost-state.stars} more stars!`}</div>
+          <div class="reward-roadmap" aria-label="Reward progress">${road}</div>
+        </section>
+        <section class="card reward-shop"><div class="eyebrow" style="text-align:center">REWARD SHOP</div><p class="sub" style="text-align:center">Finish all today's jobs, then choose.</p><div class="reward-list mt14">${state.rewards.map(r=>rewardHtml(r,all)).join('')}</div><div class="save-hint">Saving your stars can unlock a bigger prize ✨</div></section>
+        <section class="card stickers"><h3>MY STICKERS 🏅</h3><div class="sticker-row"><span class="sticker">🌟 First Star</span><span class="sticker ${done>=3?'':'lock'}">🤝 Super Helper</span><span class="sticker ${state.stars>=35?'':'lock'}">🐷 Super Saver</span><span class="sticker ${state.stars>=50?'':'lock'}">🏆 Star Champion</span></div></section>
+      </div>
+      <div class="kid-right">
+        <div class="section-head"><div><h2>TODAY ☀️</h2><p class="sub">Tap when you finish a job.</p></div><span class="pill done-pill">${done}/${total} DONE</span></div>
+        ${all?'<section class="all-done-banner"><div class="all-done-emoji">🎉</div><div><strong>ALL DONE!</strong><span>You finished every job today!</span></div><div class="all-done-emoji">⭐</div></section>':''}
+        <div class="task-list">${activeTasks().map(taskKidHtml).join('')}</div>
+      </div>
+    </div>`;
   document.querySelectorAll('.doneBtn').forEach(b=>b.onclick=()=>requestDone(b.dataset.id));
   document.querySelectorAll('.speak').forEach(b=>b.onclick=()=>speak(b.dataset.text));
   document.querySelectorAll('.redeemBtn').forEach(b=>b.onclick=()=>confirmRedeem(b.dataset.id));
   document.querySelectorAll('.saveBtn').forEach(b=>b.onclick=()=>saveTowardBigger(b.dataset.id));
   document.getElementById('settings').onclick=renderKidSettings;
+  if(state.lastApproved && Date.now()-state.lastApproved.at<15000){
+    const info=state.lastApproved;
+    delete state.lastApproved;
+    save();
+    setTimeout(()=>playApprovalAnimation(info),180);
+  }
 }
+
 function taskKidHtml(t){
   const s=status(t.id); const label=s==='pending'?'WAITING FOR MOM':s==='approved'?'DONE ✓':s==='rejected'?'TRY AGAIN':'I DID IT!';
-  return `<section class="card task"><div class="task-main"><div class="task-emoji">${t.emoji}</div><div class="grow"><div class="task-title">${esc(t.title)}</div><div class="points">+${t.points} ⭐</div></div><button class="speak" data-text="${esc(t.title)}">🔊</button></div><button class="btn ${s==='approved'?'btn-good':'btn-soft'} w-full mt14 doneBtn" data-id="${t.id}" ${s==='pending'||s==='approved'?'disabled':''}>${label}</button></section>`;
+  return `<section class="card task task-${s}" data-task-card="${t.id}"><div class="task-main"><div class="task-emoji">${t.emoji}</div><div class="grow"><div class="task-title">${esc(t.title)}</div><div class="points">+${t.points} ⭐</div></div><button class="speak" data-text="${esc(t.title)}">🔊</button></div><button class="btn ${s==='approved'?'btn-good':'btn-soft'} w-full mt14 doneBtn" data-id="${t.id}" ${s==='pending'||s==='approved'?'disabled':''}>${label}</button></section>`;
 }
+
 function rewardHtml(r,all){
   const enough=state.stars>=r.cost, unlocked=all&&enough;
   const lock=!all?'FINISH JOBS':`${Math.max(0,r.cost-state.stars)} MORE ⭐`;
   return `<div class="reward ${unlocked?'ready':''}"><div class="reward-row"><div class="reward-emoji">${r.emoji}</div><div class="grow"><div class="reward-title">${esc(r.title)}</div><div class="points">${r.cost} ⭐</div></div>${unlocked?'<span class="ready-tag">READY!</span>':`<span class="locked">${lock}</span>`}</div>${unlocked?`<div class="reward-actions"><button class="btn btn-primary redeemBtn" data-id="${r.id}">REDEEM ${r.emoji}</button><button class="btn btn-soft saveBtn" data-id="${r.id}">SAVE MY STARS ⭐</button></div>`:''}</div>`;
 }
-function requestDone(id){ const c=state.completions[id]; if(c?.status==='approved'||c?.status==='pending')return; state.completions[id]={status:'pending'}; save(); renderKid(); }
+function requestDone(id){
+  const c=state.completions[id]; if(c?.status==='approved'||c?.status==='pending')return;
+  const card=document.querySelector('[data-task-card="'+id+'"]');
+  if(card) card.classList.add('task-tap');
+  setTimeout(()=>{
+    state.completions[id]={status:'pending'};
+    save();
+    renderKid();
+    toast('Great job! Waiting for Mom ⭐');
+  }, card?220:0);
+}
 function saveTowardBigger(id){ const current=state.rewards.find(r=>r.id===id); const bigger=state.rewards.find(r=>r.cost>current.cost); if(!bigger){toast('You reached the biggest prize! 🎉');return} state.goalRewardId=bigger.id; save(); toast(`Saving for ${bigger.title} ${bigger.emoji}`); renderKid(); }
 function confirmRedeem(id){ const r=state.rewards.find(x=>x.id===id); if(!r)return; modal(`<div class="prize">${r.emoji}</div><h2>Get ${esc(r.title)}?</h2><p>Use ${r.cost} stars?</p>`,()=>redeem(id)); }
 function redeem(id){ const r=state.rewards.find(x=>x.id===id); if(!r||!allApproved()||state.stars<r.cost)return; state.stars-=r.cost; state.history.unshift({title:r.title,emoji:r.emoji,cost:r.cost,date:new Date().toISOString()}); const bigger=state.rewards.find(x=>x.cost>r.cost); if(bigger)state.goalRewardId=bigger.id; save(); celebrate(r); }
+
+function playApprovalAnimation(info){
+  const card=document.querySelector('[data-task-card="'+info.id+'"]');
+  const total=document.getElementById('kidStarTotal');
+  if(card){
+    card.classList.add('approved-burst');
+    const fly=document.createElement('div');
+    fly.className='flying-star';
+    fly.textContent='+'+info.points+' ⭐';
+    const r=card.getBoundingClientRect();
+    fly.style.left=(r.left+r.width*.55)+'px';
+    fly.style.top=(r.top+r.height*.35)+'px';
+    document.body.appendChild(fly);
+    requestAnimationFrame(()=>fly.classList.add('fly-now'));
+    setTimeout(()=>fly.remove(),1000);
+  }
+  if(total){total.classList.remove('counter-pop');void total.offsetWidth;total.classList.add('counter-pop');}
+  if(info.allDone) setTimeout(()=>allDoneCelebration(),450);
+}
+function allDoneCelebration(){
+  const layer=document.createElement('div');
+  layer.className='mini-celebration';
+  layer.innerHTML='<div class="mini-message"><div class="mini-emoji">🎉⭐🎉</div><strong>ALL DONE!</strong><span>Rewards unlocked!</span></div>';
+  document.body.appendChild(layer);
+  fx(layer);
+  setTimeout(()=>layer.remove(),2200);
+}
 
 function renderParent(){
   const pending=activeTasks().filter(t=>status(t.id)==='pending');
@@ -100,7 +159,14 @@ function renderParent(){
   document.getElementById('parentSettings').onclick=renderParentSettings;
 }
 function pendingHtml(t){return `<div class="pending-item"><strong>${t.emoji} ${esc(t.title)}</strong><div class="small">+${t.points} stars</div><div class="grid2 mt10"><button class="btn btn-good approve" data-id="${t.id}">APPROVE ✓</button><button class="btn btn-warn reject" data-id="${t.id}">NOT YET</button></div></div>`}
-function approve(id,yes){ const t=state.tasks.find(x=>x.id===id); if(!t)return; if(yes && status(id)!=='approved') state.stars+=t.points; state.completions[id]={status:yes?'approved':'rejected'}; save(); renderParent(); }
+function approve(id,yes){
+  const t=state.tasks.find(x=>x.id===id); if(!t)return;
+  if(yes && status(id)!=='approved') state.stars+=t.points;
+  state.completions[id]={status:yes?'approved':'rejected'};
+  if(yes) state.lastApproved={id,points:t.points,at:Date.now(),allDone:allApproved()};
+  save();
+  renderParent();
+}
 function addJob(){ const title=document.getElementById('jobTitle').value.trim(); const emoji=document.getElementById('jobEmoji').value.trim()||'⭐'; const points=Math.max(1,Math.min(20,Number(document.getElementById('jobPoints').value)||1)); if(!title)return; state.tasks.push({id:'t-'+Date.now(),title,emoji,points,active:true}); save(); renderParent(); }
 function historyHtml(){ return state.history.length?state.history.slice(0,8).map(h=>`<div class="history-item"><strong>${h.emoji} ${esc(h.title)}</strong><div class="small">${h.cost} stars · ${new Date(h.date).toLocaleDateString()}</div></div>`).join(''):'<div class="notice">No prizes redeemed yet.</div>'; }
 
