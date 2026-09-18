@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#b88cff"/><stop offset="1" stop-color="#ff8ec7"/></linearGradient></defs>
+  <rect width="512" height="512" rx="118" fill="url(#g)"/>
+  <circle cx="256" cy="242" r="145" fill="#fff" opacity=".94"/>
+  <path d="M256 102l34 86 92 6-71 59 23 90-78-49-78 49 23-90-71-59 92-6z" fill="#ffd75e" stroke="#7f52e8" stroke-width="16" stroke-linejoin="round"/>
+  <text x="256" y="440" text-anchor="middle" font-family="system-ui,sans-serif" font-size="46" font-weight="900" fill="#fff">MY STARS</text>
+</svg>
