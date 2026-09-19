@@ -1,5 +1,5 @@
-const CACHE = 'my-stars-v6-starcatch';
-const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/config.js', '/manifest.webmanifest', '/icons/icon.svg', '/delight-v5.css', '/delight-v5.js', '/day-guard-v6.js', '/star-catch-v6.css', '/star-catch-v6.js'];
+const CACHE = 'my-stars-v7-parents';
+const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/config.js', '/manifest.webmanifest', '/icons/icon.svg', '/delight-v5.css', '/delight-v5.js', '/day-guard-v6.js', '/star-catch-v6.css', '/star-catch-v6.js', '/parents-v7.css', '/parents-v7.js'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
